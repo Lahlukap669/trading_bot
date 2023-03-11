@@ -1,50 +1,3 @@
-##import requests
-##
-##url = 'https://api.binance.com/api/v3/klines'
-##
-##params = {
-##    'symbol': 'ETHUSDT',
-##    'interval': '1d',
-##    'startTime': '0'
-##}
-##
-##response = requests.get(url, params=params)
-##
-##if response.status_code == 200:
-##    data = response.json()
-##    for d in data:
-##        print(f"{d[0]} - {d[4]}")
-##else:
-##    print(f"Error: {response.status_code}")
-
-
-##import requests
-##import time
-##
-##url = 'https://api.binance.com/api/v3/klines'
-##
-##params = {
-##    'symbol': 'ETHUSDT',
-##    'interval': '1m',
-##    'startTime': int(time.time() - 2592000) * 1000,  # 2592000 seconds = 30 days
-##    'endTime': int(time.time()) * 1000,
-##}
-##
-##response = requests.get(url, params=params)
-##
-##if response.status_code == 200:
-##    data = response.json()
-##    i=0
-##    for d in data:
-##        timestamp = int(d[0]) // 1000  # convert timestamp to seconds
-##        value = float(d[4])
-##        if timestamp % 1 == 0:  # display data every 1 seconds
-##            print(i, f"{timestamp} - {value}")
-##        i+=1
-##else:
-##    print(f"Error: {response.status_code}")
-
-
 import requests
 import json
 import time
@@ -53,7 +6,7 @@ url = 'https://api.binance.com/api/v3/klines'
 
 params = {
     'symbol': 'ETHUSDT',
-    'interval': '1m',
+    'interval': '10s',
     'endTime': int(time.time()) * 1000,
 }
 
@@ -81,7 +34,7 @@ else:
     print(f"Error: {response.status_code}")
 
 # retrieve data for the rest of the month
-params['startTime'] = int(time.time() - 7000000) * 1000
+params['startTime'] = int(time.time() - 2592000) * 1000
 while True:
     response = requests.get(url, params=params)
     if response.status_code == 200:

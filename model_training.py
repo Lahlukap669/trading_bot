@@ -23,38 +23,37 @@ train_data = scaler.fit_transform(train_data)
 test_data = scaler.transform(test_data)
 
 # get values from train_data
-time = np.array(train_data[:, 0:1])
-marketcap = np.array(train_data[:, 1:2])
-volume = np.array(train_data[:, 2:3])
-values = np.array(train_data[:, 3:4])
-breaks = np.array(train_data[:, 4:5])
-bounces = np.array(train_data[:, 5:6])
+time = np.array(train_data)
+marketcap = np.array(train_data[:, 0:1])
+volume = np.array(train_data[:, 1:2])
+values = np.array(train_data[:, 2:3])
+bb = np.array(train_data[:, 3:4])
+
 
 # get values from test_data
-time1 = np.array(test_data[:, 0:1])
-marketcap1 = np.array(test_data[:, 1:2])
-volume1 = np.array(test_data[:, 2:3])
-values1 = np.array(test_data[:, 3:4])
-breaks1 = np.array(test_data[:, 4:5])
-bounces1 = np.array(test_data[:, 5:6])
+time1 = np.array(test_data)
+marketcap1 = np.array(test_data[:, 0:1])
+volume1 = np.array(test_data[:, 1:2])
+values1 = np.array(test_data[:, 2:3])
+bb1 = np.array(test_data[:, 3:4])
 
 train_data_x = np.concatenate([marketcap, volume, values], axis=1).reshape(1, len(time), 3)
-train_data_y = np.concatenate([breaks, bounces], axis=1).reshape(1, len(breaks), 2)
+train_data_y = np.concatenate(bb, axis=1).reshape(1, len(bb), 3)
 
 test_data = np.concatenate([time1, marketcap1, volume1, values1])
 
 # Define the model architecture
 model = Sequential()
-model.add(LSTM(units=64, input_shape=(None, 150, 4), activation='relu'))
+model.add(LSTM(units=64, input_shape=(150, 4), activation='relu'))
 model.add(Dropout(0.2))
-model.add(LSTM(units=128, activation='relu'))
+model.add(LSTM(units=64, activation='relu'))
 model.add(Dropout(0.2))
-model.add(LSTM(units=256, activation='relu'))
+model.add(LSTM(units=64, activation='relu'))
 model.add(Dropout(0.2))
-model.add(Dense(units=2, activation='sigmoid'))
+model.add(Dense(units=1, activation='softmax'))
 
 # Compile the model
-model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+model.compile(optimizer='adam', loss='cross-entropy', metrics=['accuracy'])
 
 # Train the model
 model.fit(train_data_x, train_data_y, epochs=40, validation_split=0.2)

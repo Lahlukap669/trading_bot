@@ -10,10 +10,9 @@ with open('eth1month.txt', 'r') as f:
 # Parse the JSON data
 parsed_data = json.loads(data)
 
-def get_breaks_and_bounces(data, window_size=30, sensitivity=1.3):
+def get_breaks_and_bounces(data, window_size=30, sensitivity=1.2):
     # initialize output arrays
-    breaks = np.zeros(len(data))
-    bounces = np.zeros(len(data))
+    bb = np.zeros(len(data))
 
     # loop through the data
     for i in range(window_size, len(data)):
@@ -24,15 +23,14 @@ def get_breaks_and_bounces(data, window_size=30, sensitivity=1.3):
 
         # check for break
         if data[i] > ma + sensitivity * std and data[i-1] <= ma + sensitivity * std:
-            breaks[i] = 1
+            bb[i] = 0
         # check for bounce
         elif data[i] < ma - sensitivity * std and data[i-1] >= ma - sensitivity * std:
-            bounces[i] = 1
+            bb[i] = 1
         else:
-            bounces[i] = 0
-            breaks[i] = 0
+            bb[i]=-1
 
-    return breaks, bounces
+    return bb
 
 # Assume your data is stored in two arrays: `time` and `value`
 #data = np.array([1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1])
@@ -48,19 +46,17 @@ for i in range(len(parsed_data["values"])):
     marketcap.append(parsed_data["values"][i]["marketcap"])
     
 # Get bounce and break values for each data point
-bounce_vals, break_vals = get_breaks_and_bounces(np.array(value))
+bb = get_breaks_and_bounces(np.array(value))
 
 # Convert boolean arrays to 0/1 arrays
-bounce = np.asarray(bounce_vals, dtype=int)
-break_ = np.asarray(break_vals, dtype=int)
+bb = np.asarray(bb, dtype=int)
+
 
 data = {
-    "time": time,
     "marketcap": marketcap,
     "volume": volume,
     "value": value,
-    "break": break_,
-    "bounce": bounce
+    "bb": bb
     
 }
 #make me a similar structure as pd dataframe
@@ -73,12 +69,12 @@ with open('eth1month10x.txt', 'w') as outfile:
     #pass data for each row (marketcap, volume, value) to the new txt file
     outfile.write('[')
     for i in range (len(parsed_data["values"])):
-        outfile.write('['+str(time[i])+','+str(marketcap[i])+','+str(volume[i])+','+str(value[i])+'],')
+        outfile.write('['+str(marketcap[i])+','+str(volume[i])+','+str(value[i])+'],')
     outfile.write(']')
 
 with open('eth1month10y.txt', 'w') as outfile:
     #pass data for each row (marketcap, volume, value) to the new txt file
     outfile.write('[')
     for i in range (len(parsed_data["values"])):
-        outfile.write('['+str(break_[i])+','+str(bounce[i])+'],')
+        outfile.write(str(bb[i])+',')
     outfile.write(']')
