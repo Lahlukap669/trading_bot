@@ -49,9 +49,6 @@ import requests
 import json
 import time
 
-#f = open("eth1month10s.txt", "w")
-#f.close()
-
 url = 'https://api.binance.com/api/v3/klines'
 
 params = {
@@ -60,31 +57,48 @@ params = {
     'endTime': int(time.time()) * 1000,
 }
 
-timestamps = []
-values = []
+data = []
 
 # retrieve data for the last 3 hours
 params['startTime'] = int(time.time() - 10800) * 1000
 response = requests.get(url, params=params)
 if response.status_code == 200:
-    data = response.json()
-    for d in data:
-        timestamps.append(int(d[0]) // 1000)
-        values.append(float(d[4]))
+    result = response.json()
+    for r in result:
+        timestamp = int(r[0]) // 1000
+        marketcap = float(r[5])
+        total_marketcap = float(r[7])
+        trading_volume = float(r[8])
+        value = float(r[4])
+        data.append({
+            'timestamp': timestamp,
+            'marketcap': marketcap,
+            'total_marketcap': total_marketcap,
+            'trading_volume': trading_volume,
+            'value': value
+        })
 else:
     print(f"Error: {response.status_code}")
 
 # retrieve data for the rest of the month
-params['startTime'] = int(time.time() - 2592000) * 1000  # 2592000 seconds = 30 days
+params['startTime'] = int(time.time() - 7000000) * 1000
 while True:
     response = requests.get(url, params=params)
     if response.status_code == 200:
-        data = response.json()
-        for d in data:
-            timestamp = int(d[0]) // 1000
-            value = float(d[4])
-            timestamps.append(timestamp)
-            values.append(value)
+        result = response.json()
+        for r in result:
+            timestamp = int(r[0]) // 1000
+            marketcap = float(r[5])
+            total_marketcap = float(r[7])
+            trading_volume = float(r[8])
+            value = float(r[4])
+            data.append({
+                'timestamp': timestamp,
+                'marketcap': marketcap,
+                'total_marketcap': total_marketcap,
+                'trading_volume': trading_volume,
+                'value': value
+            })
     else:
         print(f"Error: {response.status_code}")
         break
@@ -94,23 +108,9 @@ while True:
     # update the start time for the next request
     params['startTime'] = (timestamp + 1) * 1000
 
-# print the data every 10 seconds
-#f = open("eth1month10s.txt", "a")
-#f.write('{"values":[')
-
-
-
-for i in range(len(timestamps)):
-    if timestamps[i] % 10 == 0:
-        print(f"{timestamps[i]} - {values[i]}")
-        #f.write('{ "time":'+str(timestamps[i])+', "value":'+str(values[i])+' },')
-        #save the timestamps and values to a json file
-        data = {
-            'timestamps': timestamps,
-           'values': values,
-        }
-        with open('eth1month10s.json', 'a') as outfile:
-            json.dump(data, outfile)
-
-#f.write(']}')
-#f.close()
+# save the data to a text file
+with open('eth1month.txt', 'w') as outfile:
+    outfile.write('{ "values": [')
+    for d in data:
+        outfile.write('{'+'"time": '+str(d['timestamp'])+',"marketcap": '+str(d['total_marketcap'])+',"trading_volume": '+str(d['trading_volume'])+', "value": '+str(d['value'])+' },')
+    outfile.write("]}")
