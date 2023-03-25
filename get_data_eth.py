@@ -6,7 +6,7 @@ url = 'https://api.binance.com/api/v3/klines'
 
 params = {
     'symbol': 'ETHUSDT',
-    'interval': '10s',
+    'interval': '1min',
     'endTime': int(time.time()) * 1000,
 }
 
